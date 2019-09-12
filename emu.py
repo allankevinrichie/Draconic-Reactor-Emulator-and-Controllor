@@ -36,6 +36,9 @@ class Emulator(object):
     def setOutputEnergy(self, rfpt):
         self.eor = rfpt
 
+    def getInfo(self):
+        return self.core.info
+
     def addFuel(self, fuel):
         if not self.core.startupInitialized:
             self.core.reactableFuel += fuel
@@ -89,7 +92,18 @@ if __name__ == '__main__':
     emu.start()
     emu.addFuel(300)
     emu.chargeReactor()
-    emu.setInputEnergy(100000)
+    emu.setInputEnergy(1000000)
     while not emu.core.canActivate():
         pass
+    emu.activateReactor()
+    emu.setOutputEnergy(20000)
+    while not emu.getInfo()["statusName"] in ("BEYOND_HOPE", "BOOMED"):
+        info = emu.getInfo()
+        # do some calculation here to determine I/O energy
+        # target: maximum (OutputEnergy - InputEnergy)
+        # s.t. info["fieldStrength"] > 0 and info["temperature"] < 15000
+        # info["fieldStrength"] <= 0 or info["temperature"] >= 15000 will trigger an immediate boom...
+        # when info["temperature"] > 8000, the reactor will become much harder to control, but much more efficient
+        emu.setOutputEnergy(0)
+        emu.setInputEnergy(200000)
     emu.stop()
