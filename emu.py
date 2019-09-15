@@ -1,6 +1,7 @@
 import logging
 from pprint import pformat
 from threading import Timer
+from time import sleep
 
 from core import *
 
@@ -89,15 +90,17 @@ if __name__ == '__main__':
     fmt = "%(name)s::%(levelname)s::[%(tick)d] %(message)s"
     logging.basicConfig(format=fmt, level=logging.DEBUG)
     emu = Emulator(DraconicReactor(), 20)
-    emu.start()
+    # emu.start()
     emu.addFuel(300)
     emu.chargeReactor()
     emu.setInputEnergy(1000000)
     while not emu.core.canActivate():
+        emu.step()
         pass
     emu.activateReactor()
     emu.setOutputEnergy(20000)
     while not emu.getInfo()["statusName"] in ("BEYOND_HOPE", "BOOMED"):
+        emu.step()
         info = emu.getInfo()
         # do some calculation here to determine I/O energy
         # target: maximum (OutputEnergy - InputEnergy)
@@ -106,4 +109,6 @@ if __name__ == '__main__':
         # when info["temperature"] > 8000, the reactor will become much harder to control, but much more efficient
         emu.setOutputEnergy(0)
         emu.setInputEnergy(200000)
+        sleep(0.5)
+
     emu.stop()
